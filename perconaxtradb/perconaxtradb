@@ -75,7 +75,7 @@ then
     --advertise-client-urls http://$etcdnetwork:2379 --listen-client-urls http://$etcdnetwork:2379 \
     --initial-cluster infra0=http://$etcdnetwork:2380 \
     --initial-cluster-state new --initial-cluster-token etcdtoken &
-  sleep 20;
+  sleep 5;
 else
   curl -sS http://$IP:2379/version
   echo 'etcd detected';
