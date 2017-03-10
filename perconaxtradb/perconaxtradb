@@ -77,7 +77,7 @@ then
     --initial-cluster-state new --initial-cluster-token etcdtoken &
   sleep 5;
 else
-  curl -sS http://$IP:2379/version
+  curl -sS http://$etcdnetwork:2379/version 
   echo 'etcd detected';
 fi
 
