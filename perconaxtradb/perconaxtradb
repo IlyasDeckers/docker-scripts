@@ -43,6 +43,9 @@ fi
 
 echo -n 'Please specify the cluster name: ';
 read clustername;
+echo '';
+echo -n 'Please specify the mysql root password: ';
+read mysqlroot;
 
 echo ''
 echo ''
@@ -51,6 +54,7 @@ echo "  etcd listen address:   "$etcdnetwork;
 echo "  Create Network:        "$createnetwork;
 echo "  Network name:          "$network
 echo "  Cluster name:          "$clustername;
+echo "  MySQL root password:   "$mysqlroot
 echo ""
 echo -n "Is this information correct? [yes/no] "
 read confirmation;
@@ -83,9 +87,9 @@ echo 'Starting first node';
 docker service create \
 --name client-mysql-master01 \
 --network $network \
--e MYSQL_ROOT_PASSWORD=x3tjVsnfWs8K \
+-e MYSQL_ROOT_PASSWORD=$mysqlroot \
 -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
--e XTRABACKUP_PASSWORD=x3tjVsnfWs8K \
+-e XTRABACKUP_PASSWORD=$mysqlroot \
 -e CLUSTER_NAME=$clustername \
 severalnines/pxc56
 echo '';
@@ -96,9 +100,9 @@ echo 'Starting second node'
 docker service create \
 --name client-mysql-master02 \
 --network $network \
--e MYSQL_ROOT_PASSWORD=x3tjVsnfWs8K \
+-e MYSQL_ROOT_PASSWORD=$mysqlroot \
 -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
--e XTRABACKUP_PASSWORD=x3tjVsnfWs8K \
+-e XTRABACKUP_PASSWORD=$mysqlroot \
 -e CLUSTER_NAME=$clustername \
 severalnines/pxc56
 
@@ -109,9 +113,9 @@ echo 'Starting third node'
 docker service create \
 --name client-mysql-master03 \
 --network $network \
--e MYSQL_ROOT_PASSWORD=x3tjVsnfWs8K \
+-e MYSQL_ROOT_PASSWORD=$mysqlroot \
 -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
--e XTRABACKUP_PASSWORD=x3tjVsnfWs8K \
+-e XTRABACKUP_PASSWORD=$mysqlroot \
 -e CLUSTER_NAME=$clustername \
 severalnines/pxc56
 
