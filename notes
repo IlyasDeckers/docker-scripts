@@ -1,0 +1,39 @@
+docker service create --name mysql_cluster_proxy \
+	--network client-mysql \
+	-p 3306 -p 6032 \
+	-e DISCOVERY_SERVICE=192.168.0.111:2379 \
+	-e CLUSTER_NAME=client_mysql \
+	-e MYSQL_PROXY_USER=proxyuser \
+	-e MYSQL_PROXY_PASSWORD=s3cret \
+	-e MYSQL_ROOT_PASSWORD=x3tjVsnfWs8K \
+	mysql-proxy2
+
+docker run --rm -t --name=${CLUSTER_NAME}_proxysql \
+	-p 3306:3306 -p 6032:6032 \
+	-e CLUSTER_NAME=$CLUSTER_NAME \
+	-e MYSQL_BOOTSTRAP="true" \
+	-e DISCOVERY_SERVICE=$ETCD_HOST \
+	-e DISCOVERY_SLEEP='5' \
+	-e ADMIN_USER="admin" \
+	-e ADMIN_PASS="qazXSW21!!" \
+	-e MYSQL_ROOT_PASSWORD="str0nkpassword!" \
+	-e MYSQL_PROXY_USER="access" \
+	-e MYSQL_PROXY_PASS="s3cret" \
+proxysql
+
+
+
+
+DISCOVERY_SLEEP int: default: 15 Time to sleep between checking servers in ProxySQL and ETCD backend.
+ADMIN_USER string: default: admin
+ADMIN_PASS string: default: admin
+ADMIN_PORT int: defaut: 6032
+MYSQL_BOOTSTRAP true/false: if set to 'true' the entrypoint script for ProxySQL will create a superuser on each mysql server.
+
+The following ENV variables are only usable if MYSQL_BOOTSTRAP is set to 'true'
+
+MYSQL_PROXY_USER string: mysql superuser name
+
+MYSQL_PROXY_PASS string: mysql superuser password
+
+MYSQL_ROOT_PASSWORD string: root password on mysql cluster nodes '''

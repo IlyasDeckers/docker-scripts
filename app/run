@@ -1,0 +1,38 @@
+#!/bin/bash
+
+docker service create \
+    --name "$APP_NAME"-memcache \
+    --network "APP_NAME"-network \
+    --constraint 'node.role == worker' \
+    -e MEMCACHED_USERNAME=$MEMCACHED_USERNAME \
+    -e MEMCACHED_PASSWORD=$MEMCACHED_PASSWORD \
+    -l 'com.docker.swarm.reschedule-policy=["on-node-failure"]' \
+    frodenas/memcached
+
+# Run the PhaseHosting client interface
+
+docker service create \
+	--name "$APP_NAME"-app \
+	--constraint 'node.role==worker' \
+	--network "$APP_NAME"-network \
+    --network proxy \
+    --replicas 1 \
+	--label com.df.serviceDomain=app.phasehosting.io \
+    --mount type=bind,source=/mnt/letsencrypt,target=/etc/letsencrypt,readonly \
+	--label com.df.notify=true \
+    --label com.df.distribute=true \
+	--label com.df.servicePath=/ \
+    --label com.df.srcPort=443 \
+    --label com.df.port=443 \
+	--label  com.df.sslVerifyNone=true \
+	-e 'DOMAIN=$DOMAIN \
+	-e reschedule:on-node-failure \
+	-e GIT_EMAIL=$GIT_EMAIL \
+	-e GIT_NAME=$GIT_NAME \
+	-e GIT_USERNAME=$GIT_USERNAME' \
+	-e GIT_REPO=$GIT_REPO \
+	-e GIT_PERSONAL_TOKEN=nrXL77vWXxaswG8Uwyzn' \
+	-e RUN_SCRIPTS=1 \
+	-e WEBROOT=/var/www/html/public \
+    -l com.docker.swarm.reschedule-policy=["on-node-failure"] \
+	richarvey/nginx-php-fpm:latest

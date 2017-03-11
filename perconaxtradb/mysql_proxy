@@ -1,0 +1,11 @@
+#!/bin/sh
+
+docker service create --name mysql_cluster_proxy \
+	--network client-mysql \
+	-p 3306 -p 6032 \
+	-e DISCOVERY_SERVICE=192.168.0.111:2379 \
+	-e CLUSTER_NAME=client_mysql \
+	-e MYSQL_PROXY_USER=proxyuser \
+	-e MYSQL_PROXY_PASSWORD=s3cret \
+	-e MYSQL_ROOT_PASSWORD=pass \
+	mysql-proxy2
