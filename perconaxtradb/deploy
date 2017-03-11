@@ -1,0 +1,92 @@
+#!/bin/sh
+
+deploy() {
+	echo -n 'This setup relies on etcd. Do you want to create a etcd container? [yes/no] ';
+	read etcdcontainer;
+
+	if [ "$etcdcontainer" == 'yes' ];
+	then
+		echo -n 'Please specify the etcd listen address: ';
+		read etcdnetwork;
+	else
+		echo -n 'What address is etcd listening on? '
+		read etcdnetwork;
+	fi
+
+	##
+	# Create or select a network to use
+	##
+
+	echo -n 'Create network? [yes/no]: '
+	read createnetwork;
+
+	if [ "$createnetwork" == 'yes' ];
+	then
+
+	  create_network;
+
+	elif [ "$createnetwork" == 'no' ]
+	then
+
+	  choose_network;
+
+	else
+	  echo 'You must specify a network';
+	  exit 1;
+	fi
+
+	echo -n 'Please specify the cluster name: ';
+	read clustername;
+
+	echo -n 'Please specify the mysql root password: ';
+	read mysqlroot;
+
+	echo ''
+	echo "  Create etcd container: "$etcdcontainer;
+	echo "  Create Network:        "$createnetwork;
+	echo "  etcd listen address:   "$etcdnetwork;
+	echo "  Network name:          "$network
+	echo "  Cluster name:          "$clustername;
+	echo "  MySQL root password:   "$mysqlroot
+	echo ""
+	echo -n "Is this information correct? [yes/no] "
+	read confirmation;
+
+	if [ "$confirmation" == 'no' ]
+	then
+	  exit 1;
+	fi
+
+	if [ "$etcdcontainer" == 'yes' ];
+	then
+	  start_etcd;
+	  sleep 8;
+	else
+	  detect_etcd;
+	fi
+
+
+	for ((n=1;n<4;n++)); 
+	do 
+		echo ''
+	    echo "Starting node #$n";
+
+		start_xtradb_cluster;
+
+		echo '';
+		if [ "$n" == 1 ];
+		then
+		  	echo 'Waiting 30 seconds for the first node to bootstrap the cluster...'
+		  sleep 30;
+		else
+		  	echo "Waiting 10 seconds for node $x to start..."
+		  	sleep 10;
+		fi 
+	done
+
+	echo 'Percona XtraDB started successfully'
+	echo 'Use perconaxtradb --status to check the cluster health'
+	echo 'Use perconaxtradb --add-nodes 3 (add 3 extra nodes)'
+
+	exit;
+}

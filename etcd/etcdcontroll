@@ -1,18 +1,27 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
+instructions() {
+cat << EOF
 
-  cat << EOF
+Usage: etcdcontroll --prune <foldername>/<key_name>
 
-        Usage: script.sh --prune <foldername>/<key_name>
-
-        options:
-                --prune string          delete all keys from etcd " (example: --prune galera/my_wsrep_cluster)"
-                --list-keys string      List all keys "(example: --prune galera/my_wsrep_cluster)"
+options:
+	--shell                get an interactive etcd shell
+    --cluster-health       check the cluster health
+    --start-container      start a etcd container (Example: --start-container [ listen ip ] )
+    --prune string         delete all keys from etcd (example: --prune galera/my_wsrep_cluster)
+    --list-keys string     List all keys (example: --prune galera/my_wsrep_cluster)
 
 EOF
-exit 1;
-fi
+	exit 1;
+}
+
+
+# if [ "$#" -ne 1 ]; then
+
+#   	instructions;
+
+# fi
 
 #echo "No host specified. Trying to detirmine the internal IP.";
 
@@ -22,8 +31,8 @@ IP="10.0.2.15";
 
 if [ "$1" == "--prune" ];
 then
-        curl -sS http://$IP:2379/v2/keys/$2?recursive=true -XDELETE;
-        exit 1;
+    curl -sS http://$IP:2379/v2/keys/$2?recursive=true -XDELETE | python -m json.tool;
+    exit 1;
 fi
 
 if [ "$1" == "--list-keys" ];
@@ -31,3 +40,29 @@ then
   curl -sS http://$IP:2379/v2/keys/$2?recursive=true | python -m json.tool;
   exit 1;
 fi
+
+if [ "$1" == "--cluster-health" ];
+then
+  echo "Working on it :)"
+  curl -sS http://$IP:2379/v2/members?recursive=true | python -m json.tool;
+  exit 1;
+fi
+
+if [ "$1" == '--start-container' ];
+then
+  echo ''
+  echo 'Starting etcd';
+  sudo docker run --net=host --name etcd quay.io/coreos/etcd:v3.1.3 \
+    /usr/local/bin/etcd \
+    --name infa0 \
+    --data-dir=data.etcd --name infra0 \
+    --initial-advertise-peer-urls http://$2:2380 --listen-peer-urls http://$2:2380 \
+    --advertise-client-urls http://$2:2379 --listen-client-urls http://$2:2379 \
+    --initial-cluster infra0=http://$2:2380 \
+    --initial-cluster-state new --initial-cluster-token etcdtoken &
+  sleep 5;
+  echo 'Success';
+  exit 1;
+fi
+
+instructions;

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+scale_cluster() {
+  if [ -n "$2"] && [ "$1" == "--scale" ];
+  then
+   echo "Please set the number of nodes";
+   exit 1;
+  fi
+
+  if [ "$1" == "--scale" ];
+  then
+    docker service create \
+      --name client-mysql-node"$(( (RANDOM %10000 ) + 1 ))" \
+      --network client-mysql \
+      --replicas $2 \
+      -e MYSQL_ROOT_PASSWORD=$mysqlroot \
+      -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
+      -e XTRABACKUP_PASSWORD=$mysqlroot \
+      -e CLUSTER_NAME=$clustername \
+      severalnines/pxc56
+  fi
+}
