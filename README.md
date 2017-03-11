@@ -1,5 +1,5 @@
 # Scaleable web app on Docker
-Script to fire off a full web application on Docke Swarm
+Script to fire off a full web application on Docker Swarm
 
 - Percona XtraDB cluster
 - Mysql proxy
