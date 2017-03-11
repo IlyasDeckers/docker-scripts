@@ -45,7 +45,7 @@ deploy() {
 	echo "  Create etcd container: "$etcdcontainer;
 	echo "  Create Network:        "$createnetwork;
 	echo "  etcd listen address:   "$etcdnetwork;
-	echo "  Network name:          "$network
+	echo "  Network name:          "$network;
 	echo "  Cluster name:          "$clustername;
 	echo "  MySQL root password:   "$mysqlroot
 	echo ""
@@ -59,6 +59,7 @@ deploy() {
 
 	if [ "$etcdcontainer" == 'yes' ];
 	then
+	  get_images;
 	  start_etcd;
 	  sleep 8;
 	else
@@ -85,8 +86,32 @@ deploy() {
 	done
 
 	echo 'Percona XtraDB started successfully'
+	echo ''
 	echo 'Use perconaxtradb --status to check the cluster health'
 	echo 'Use perconaxtradb --add-nodes 3 (add 3 extra nodes)'
+	echo ''
+	echo -n 'Start mysql-proxy? [yes/no] '
+	read confirmation
+
+	if [ "$confirmation" == 'no'];
+	then 
+		exit;
+	fi
+	echo -n 'How many proxy replicas? [3]'
+	read 'replicas'
+	docker service create --name "$clustername"_proxy \
+		--network $network \
+		-p 3306 -p 6032 \
+		--replicas $replicas
+		-e DISCOVERY_SERVICE=$etcdnetwork:2379 \
+		-e CLUSTER_NAME=clustername \
+		-e MYSQL_PROXY_USER=proxyuser \
+		-e MYSQL_PROXY_PASSWORD=s3cret \
+		-e MYSQL_ROOT_PASSWORD=mysqlroot \
+		mysql-proxy2
+
+	echo 'You can now connect to the mysql cluster with:'
+	echo 'mysql -u root -pPassword -h "$clustername"_proxy'
 
 	exit;
 }

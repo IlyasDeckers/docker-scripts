@@ -3,6 +3,7 @@
 . /opt/docker-scripts/perconaxtradb/functions
 . /opt/docker-scripts/perconaxtradb/deploy
 . /opt/docker-scripts/perconaxtradb/scale
+. /opt/docker-scripts/.env
 
 while [ ! $# -eq 0 ]
 do

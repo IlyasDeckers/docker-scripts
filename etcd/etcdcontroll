@@ -7,46 +7,56 @@ Usage: etcdcontroll --prune <foldername>/<key_name>
 
 options:
 	--shell                get an interactive etcd shell
-    --cluster-health       check the cluster health
-    --start-container      start a etcd container (Example: --start-container [ listen ip ] )
-    --prune string         delete all keys from etcd (example: --prune galera/my_wsrep_cluster)
-    --list-keys string     List all keys (example: --prune galera/my_wsrep_cluster)
+    --cluster-health [ etcd ip ]      check the cluster health 
+    --start-container [ etcd ip ]     start a etcd container (Example: --start-container [ listen ip ] )
+    --prune string [ etcd ip ]        delete all keys from etcd (example: --prune galera/my_wsrep_cluster [ etcd ip ] )
+    --list-keys string [ etcd ip ]    List all keys (example: --prune galera/my_wsrep_cluster [ etcd ip ])
 
 EOF
 	exit 1;
 }
 
+prune() {
+  curl -sS http://$3:2379/v2/keys/$2?recursive=true -XDELETE | python -m json.tool;
+  exit;
+}
 
-# if [ "$#" -ne 1 ]; then
+list_keys() {
+  curl -sS http://$3:2379/v2/keys/$2?recursive=true | python -m json.tool;
+  exit;
+}
 
-#   	instructions;
+cluster_health() {
+  curl -sS http://$2:2379/v2/members?recursive=true | python -m json.tool;
+  exit;
+}
 
-# fi
+if [ -z "$3" ];
+then
+  echo "You did not specify an IP address"
+  exit;
+fi
 
-#echo "No host specified. Trying to detirmine the internal IP.";
-
-IP="10.0.2.15";
-
-#echo $IP;
+IP=$2;
 
 if [ "$1" == "--prune" ];
 then
-    curl -sS http://$IP:2379/v2/keys/$2?recursive=true -XDELETE | python -m json.tool;
-    exit 1;
+  prune;
 fi
 
 if [ "$1" == "--list-keys" ];
 then
-  curl -sS http://$IP:2379/v2/keys/$2?recursive=true | python -m json.tool;
-  exit 1;
+  list_keys;
 fi
 
 if [ "$1" == "--cluster-health" ];
 then
   echo "Working on it :)"
-  curl -sS http://$IP:2379/v2/members?recursive=true | python -m json.tool;
-  exit 1;
+  cluster_health;
 fi
+
+
+
 
 if [ "$1" == '--start-container' ];
 then

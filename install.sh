@@ -8,3 +8,5 @@ echo "  Copying files"
 ln -s /opt/docker-scripts/perconaxtradb/perconaxtradb /usr/local/bin/perconaxtradb
 ln -s /opt/docker-scripts/etcd/etcdcontroll /usr/local/bin/etcdcontroll
 echo "  Success"
+exit;
+
