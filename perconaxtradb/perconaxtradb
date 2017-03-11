@@ -1,8 +1,8 @@
 #!/bin/bash
 
-. /home/ilyas/scripts/docker-scripts/perconaxtradb/functions
-. /home/ilyas/scripts/docker-scripts/perconaxtradb/deploy
-. /home/ilyas/scripts/docker-scripts/perconaxtradb/scale
+. /opt/docker-scripts/perconaxtradb/functions
+. /opt/docker-scripts/perconaxtradb/deploy
+. /opt/docker-scripts/perconaxtradb/scale
 
 while [ ! $# -eq 0 ]
 do
