@@ -26,7 +26,7 @@ start_xtradb_cluster() {
   docker service create \
     --name $clustername-$HOST \
     --network $network \
-    --mount type=volume,source=galeradb$HOST,target=/var/lib/mysql \
+    --mount type=volume,source=$clustername-$HOST,target=/var/lib/mysql \
     -e MYSQL_ROOT_PASSWORD=$mysqlroot \
     -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
     -e XTRABACKUP_PASSWORD=$mysqlroot \
