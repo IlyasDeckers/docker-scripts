@@ -24,13 +24,14 @@ testing(){
 
 start_xtradb_cluster() {
   docker service create \
-    --name client-mysql-master$n \
+    --name $clustername-$HOST \
     --network $network \
-    --mount type=volume,source=galeradb$n,target=/var/lib/mysql \
+    --mount type=volume,source=galeradb$SERVER,target=/var/lib/mysql \
     -e MYSQL_ROOT_PASSWORD=$mysqlroot \
     -e DISCOVERY_SERVICE=$etcdnetwork:2379 \
     -e XTRABACKUP_PASSWORD=$mysqlroot \
     -e CLUSTER_NAME=$clustername \
+    --constraint "node.id == $HOST" \
     severalnines/pxc56
 }
 
@@ -61,7 +62,7 @@ instructions() {
     echo 'Deploy and controll a high available PerconaXtraDB cluster'
     echo 'Note: not production ready. Use at own risk'
     echo ''
-    echo 'options:';
+    echo 'options:'
     echo '    -n | --new-cluster    New cluster'
     echo '    -s | --scale          Scale the cluster'
     echo '    -h | --help           Show instructions'   

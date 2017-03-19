@@ -1,11 +1,92 @@
 #!/bin/sh
 
 docker service create --name mysql_cluster_proxy \
-	--network client-mysql \
+	--network mysql-client \
 	-p 3306 -p 6032 \
-	-e DISCOVERY_SERVICE=192.168.0.111:2379 \
-	-e CLUSTER_NAME=client_mysql \
-	-e MYSQL_PROXY_USER=proxyuser \
-	-e MYSQL_PROXY_PASSWORD=s3cret \
-	-e MYSQL_ROOT_PASSWORD=pass \
-	mysql-proxy2
+	-e DISCOVERY_SERVICE=10.100.0.11:2379 \
+	-e CLUSTER_NAME=mysql_client \
+	-e MYSQL_PROXY_USER=ilyas \
+	-e MYSQL_PROXY_PASSWORD=ddsqsdsdzedfsqsffbq \
+	-e MYSQL_ROOT_PASSWORD=x3tjVsnfWs8K \
+	phasehosting/mysql-proxy
+
+docker service create \
+	--name client-app \
+	--constraint 'node.role==worker' \
+	--network client-network \
+	--network mysql-client \
+    --network proxy \
+    --replicas 1 \
+	--label com.df.serviceDomain=app.phasehosting.io \
+	--mount type=bind,source=/var/lib/data/client-app,target=/var/www/html \
+    --mount type=bind,source=/var/lib/data/letsencrypt,target=/etc/letsencrypt,readonly \
+	--label com.df.notify=true \
+    --label com.df.distribute=true \
+	--label com.df.servicePath=/ \
+    --label com.df.srcPort=443 \
+    --label com.df.port=443 \
+	--label  com.df.sslVerifyNone=true \
+	-e 'DOMAIN=app.phasehosting.io' \
+	-e reschedule:on-node-failure \
+	-e 'GIT_EMAIL=ilyas@phasehosting.io' \
+	-e 'GIT_NAME=Ilyas Deckers' \
+	-e 'GIT_USERNAME=IlyasDeckers' \
+	-e 'GIT_REPO=gitlab.com/PhaseHosting/client_deployment.git' \
+	-e 'GIT_PERSONAL_TOKEN=nrXL77vWXxaswG8Uwyzn' \
+	-e 'RUN_SCRIPTS=1' \
+	-e WEBROOT=/var/www/html/public \
+    -l 'com.docker.swarm.reschedule-policy=["on-node-failure"]' \
+	phasehosting/nginx-php-laravel
+
+
+docker service create \
+	--name client-app \
+	--network client-network \
+    --network proxy \
+    --network mysql-client \
+	--mount type=bind,source=/var/lib/data/client-app,destination=/var/www/html \
+	--mount type=bind,source=/var/lib/data/letsencrypt,target=/etc/letsencrypt,readonly \
+	--label com.df.serviceDomain=app.phasehosting.io \
+	--label com.df.notify=true \
+    --label com.df.distribute=true \
+	--label com.df.servicePath=/ \
+    --label com.df.port=443 \
+    --label com.df.sslVerifyNone=true \
+	-e reschedule:on-node-failure \
+	-e 'GIT_EMAIL=ilyas@phasehosting.io' \
+	-e 'GIT_NAME=Ilyas Deckers' \
+	-e 'GIT_USERNAME=IlyasDeckers' \
+	-e 'GIT_REPO=gitlab.com/PhaseHosting/client_deployment.git' \
+	-e 'GIT_PERSONAL_TOKEN=nrXL77vWXxaswG8Uwyzn' \
+	-e 'RUN_SCRIPTS=1' \
+	-e WEBROOT=/var/www/html/src/public \
+	phasehosting/nginx-php-laravel
+
+
+docker service create --name letsencrypt-companion \
+    --label com.df.notify=true \
+    --label com.df.distribute=true \
+    --label com.df.servicePath=/.well-known/acme-challenge \
+    --label com.df.port=80 \
+    -e DOMAIN_1="('app2.phasehosting.io')"\
+    -e DOMAIN_2="('app.phasehosting.io')"\
+    -e DOMAIN_3="('client.phasehosting.io')"\
+    -e DOMAIN_3="('client2.phasehosting.io')"\
+    -e DOMAIN_4="('phasehosting.io, www.phasehosting.io')"\
+    -e DOMAIN_COUNT=4 \
+    -e CERTBOT_EMAIL="ilyas@phasehosting.io" \
+    -e PROXY_INSTANCE_NAME="proxy" \
+    -e CERTBOT_CRON_RENEW="('0 3 * * *' '0 15 * * *')"\
+    --network proxy \
+    --mount type=bind,source=/var/lib/data/letsencrypt,target=/etc/letsencrypt \
+    --replicas 1 \
+    hamburml/docker-flow-letsencrypt:latest
+
+
+docker service create \
+--name client-memcache \
+--network client-network \
+-e MEMCACHED_USERNAME=IlyasDeckers \
+-e MEMCACHED_PASSWORD=pZm1rmfWBarxOrI0 \
+-l 'com.docker.swarm.reschedule-policy=["on-node-failure"]' \
+ frodenas/memcached
