@@ -86,7 +86,7 @@ deploy() {
 		  	sleep 10;
 		fi 
 
-		n = $n+1
+		n=$n+1
 	done
 
 	echo 'Percona XtraDB started successfully'
