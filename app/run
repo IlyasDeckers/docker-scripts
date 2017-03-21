@@ -31,7 +31,7 @@ docker service create \
 	-e GIT_NAME=$GIT_NAME \
 	-e GIT_USERNAME=$GIT_USERNAME' \
 	-e GIT_REPO=$GIT_REPO \
-	-e GIT_PERSONAL_TOKEN=nrXL77vWXxaswG8Uwyzn' \
+	-e GIT_PERSONAL_TOKEN=$GIT_PERSONAL_TOKEN' \
 	-e RUN_SCRIPTS=1 \
 	-e WEBROOT=/var/www/html/public \
     -l com.docker.swarm.reschedule-policy=["on-node-failure"] \
