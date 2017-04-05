@@ -56,8 +56,8 @@ docker service create \
 	-e 'GIT_EMAIL=ilyas@phasehosting.io' \
 	-e 'GIT_NAME=Ilyas Deckers' \
 	-e 'GIT_USERNAME=IlyasDeckers' \
-	-e 'GIT_REPO=gitlab.com/PhaseHosting/client_deployment.git' \
-	-e 'GIT_PERSONAL_TOKEN=nrXL77vWXxaswG8Uwyzn' \
+	-e 'GIT_REPO=' \
+	-e 'GIT_PERSONAL_TOKEN=' \
 	-e 'RUN_SCRIPTS=1' \
 	-e WEBROOT=/var/www/html/src/public \
 	phasehosting/nginx-php-laravel
